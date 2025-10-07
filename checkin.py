@@ -1,6 +1,8 @@
 import requests
 import string
 import random
+import sys
+import termios
 
 class Color:
     RED = '\033[91m'
@@ -17,10 +19,21 @@ def generate_secret_key(length=26):
     secret_key = ''.join(random.choices(characters, k=length))
     return secret_key
 
-import msvcrt
 def clear_input_buffer():
-    while msvcrt.kbhit():
-        msvcrt.getch()
+    import os
+    import sys
+    try:
+        if os.name == 'nt':
+            import msvcrt
+            while msvcrt.kbhit():
+                msvcrt.getch()
+        else:  
+            fd = sys.stdin.fileno()
+            if os.isatty(fd):
+                termios.tcflush(fd, termios.TCIFLUSH)
+    except Exception as e:
+        print(f"Error clearing input buffer: {e}")
+        
 
 function_url = "https://us-central1-gdsc-web-2d5fa.cloudfunctions.net/api/checkin"
 code = generate_secret_key()
@@ -28,13 +41,13 @@ print("Code:", code)
 courseId = input("請輸入課程代碼: ")
 
 setting_response = requests.post(f'{function_url}/settings?course={courseId}&code={code}')
-print('Setting Response:',setting_response.text) 
+print('Setting Response:', setting_response.text) 
 # 從 QR Code 掃描機獲取輸入
 
 while(True):
     clear_input_buffer()
     print()
-    userId = input("請掃描 QR Code: ").replace("/","")
+    userId = input("請掃描 QR Code: ").replace("/", "")
     print(f'{userId}')
     response_post = requests.post(f'{function_url}?user={userId}&code={code}&course={courseId}')
     if(response_post.status_code == 200):

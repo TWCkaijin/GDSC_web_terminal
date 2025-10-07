@@ -1,5 +1,10 @@
 WEB_SECRET = "rezwxtyculutkdtiouyilt54489t65edfghjkl"
 import requests
+import string
+import random
+import sys
+import termios
+import os
 
 class color:
     PURPLE = '\033[95m'
@@ -13,10 +18,12 @@ class color:
     UNDERLINE = '\033[4m'
     END = '\033[0m'
 
-import msvcrt
 def clear_input_buffer():
-    while msvcrt.kbhit():
-        msvcrt.getch()
+    # 檢查標準輸入是否是終端
+    if os.isatty(sys.stdin.fileno()):
+        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+    else:
+        print("標準輸入不是終端，無法清除輸入緩衝區。")
 
 function_url = "https://us-central1-gdsc-web-2d5fa.cloudfunctions.net/api/payment"
 payload = {'code': WEB_SECRET}
